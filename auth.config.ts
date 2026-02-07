@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
+import type { Role } from '@/app/lib/definitions';
  
 export const authConfig = {
   // Current capabilities:
@@ -28,7 +29,7 @@ export const authConfig = {
     },
     session({ session, token }) {
       if (session.user && token.role) {
-        session.user.role = token.role;
+        session.user.role = token.role as Role;
       }
       return session;
     },
