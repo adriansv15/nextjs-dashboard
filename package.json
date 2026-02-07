@@ -4,7 +4,8 @@
     "build": "next build",
     "dev": "next dev --turbopack",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -29,7 +30,8 @@
     "@types/react": "19.0.7",
     "@types/react-dom": "19.0.3",
     "eslint": "^9.39.2",
-    "eslint-config-next": "^16.1.6"
+    "eslint-config-next": "^16.1.6",
+    "vitest": "^3.2.4"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

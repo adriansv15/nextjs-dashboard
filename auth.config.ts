@@ -1,6 +1,10 @@
 import type { NextAuthConfig } from 'next-auth';
  
 export const authConfig = {
+  // Current capabilities:
+  // - Uses a credentials-based sign-in flow (/login).
+  // - Protects /dashboard routes by redirecting unauthenticated users to /login.
+  // - Redirects authenticated users away from public routes to /dashboard.
   pages: {
     signIn: '/login',
   },
@@ -15,6 +19,18 @@ export const authConfig = {
         return Response.redirect(new URL('/dashboard', nextUrl));
       }
       return true;
+    },
+    jwt({ token, user }) {
+      if (user) {
+        token.role = user.role;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (session.user && token.role) {
+        session.user.role = token.role;
+      }
+      return session;
     },
   },
   providers: [], // Add providers with an empty array for now

@@ -6,6 +6,10 @@ import type { User } from '@/app/lib/definitions';
 import bcrypt from 'bcrypt';
 import postgres from 'postgres';
  
+// Current capabilities:
+// - Credentials login backed by the users table.
+// - Secure password verification with bcrypt.
+// - Session and JWT enrichment with role claims via auth.config.ts callbacks.
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
  
 async function getUser(email: string): Promise<User | undefined> {
@@ -33,7 +37,9 @@ export const { auth, signIn, signOut } = NextAuth({
           if (!user) return null;
           const passwordsMatch = await bcrypt.compare(password, user.password)
 
-          if(passwordsMatch) return user
+          if (passwordsMatch) {
+            return { ...user, role: user.role ?? 'viewer' };
+          }
         }
         
         console.log('Invalid credentials')

@@ -3,15 +3,22 @@ import { UpdateInvoice, DeleteInvoice } from '@/app/ui/invoices/buttons';
 import InvoiceStatus from '@/app/ui/invoices/status';
 import { formatDateToLocal, formatCurrency } from '@/app/lib/utils';
 import { fetchFilteredInvoices } from '@/app/lib/data';
+import type { Role } from '@/app/lib/definitions';
+import { canDeleteInvoice, canUpdateInvoice } from '@/app/lib/rbac';
 
 export default async function InvoicesTable({
   query,
   currentPage,
+  role,
 }: {
   query: string;
   currentPage: number;
+  role: Role;
 }) {
   const invoices = await fetchFilteredInvoices(query, currentPage);
+  const showEdit = canUpdateInvoice(role);
+  const showDelete = canDeleteInvoice(role);
+  const showActions = showEdit || showDelete;
 
   return (
     <div className="mt-6 flow-root">
@@ -46,10 +53,12 @@ export default async function InvoicesTable({
                     </p>
                     <p>{formatDateToLocal(invoice.date)}</p>
                   </div>
-                  <div className="flex justify-end gap-2">
-                    <UpdateInvoice id={invoice.id} />
-                    <DeleteInvoice id={invoice.id} />
-                  </div>
+                  {showActions ? (
+                    <div className="flex justify-end gap-2">
+                      {showEdit ? <UpdateInvoice id={invoice.id} /> : null}
+                      {showDelete ? <DeleteInvoice id={invoice.id} /> : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ))}
@@ -72,9 +81,11 @@ export default async function InvoicesTable({
                 <th scope="col" className="px-3 py-5 font-medium">
                   Status
                 </th>
-                <th scope="col" className="relative py-3 pl-6 pr-3">
-                  <span className="sr-only">Edit</span>
-                </th>
+                {showActions ? (
+                  <th scope="col" className="relative py-3 pl-6 pr-3">
+                    <span className="sr-only">Edit</span>
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="bg-white">
@@ -107,12 +118,14 @@ export default async function InvoicesTable({
                   <td className="whitespace-nowrap px-3 py-3">
                     <InvoiceStatus status={invoice.status} />
                   </td>
-                  <td className="whitespace-nowrap py-3 pl-6 pr-3">
-                    <div className="flex justify-end gap-3">
-                      <UpdateInvoice id={invoice.id} />
-                      <DeleteInvoice id={invoice.id} />
-                    </div>
-                  </td>
+                  {showActions ? (
+                    <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                      <div className="flex justify-end gap-3">
+                        {showEdit ? <UpdateInvoice id={invoice.id} /> : null}
+                        {showDelete ? <DeleteInvoice id={invoice.id} /> : null}
+                      </div>
+                    </td>
+                  ) : null}
                 </tr>
               ))}
             </tbody>

@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { fetchInvoicesPages } from '@/app/lib/data';
 import { Metadata } from 'next';
+import { canCreateInvoice, getCurrentUserRole } from '@/app/lib/rbac';
 
 export const metadata: Metadata = {
   title: 'Invoices',
@@ -22,6 +23,7 @@ export default async function Page(props: {
   const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
   const totalPages = await fetchInvoicesPages(query);
+  const role = await getCurrentUserRole();
 
   return (
     <div className="w-full">
@@ -30,10 +32,13 @@ export default async function Page(props: {
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
         <Search placeholder="Search invoices..." />
-        <CreateInvoice />
+        {canCreateInvoice(role) ? <CreateInvoice /> : null}
       </div>
-      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
+      <Suspense
+        key={query + currentPage + role}
+        fallback={<InvoicesTableSkeleton />}
+      >
+        <Table query={query} currentPage={currentPage} role={role} />
       </Suspense>
       <div className="mt-5 flex w-full justify-center">
         <Pagination totalPages={totalPages} />
