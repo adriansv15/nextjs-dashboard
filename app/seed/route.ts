@@ -15,6 +15,7 @@ async function seedUsers() {
       role VARCHAR(50) NOT NULL DEFAULT 'viewer'
     );
   `;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) NOT NULL DEFAULT 'viewer'`;
 
   const insertedUsers = await Promise.all(
     users.map(async (user) => {
@@ -22,7 +23,7 @@ async function seedUsers() {
       return sql`
         INSERT INTO users (id, name, email, password, role)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword}, ${user.role})
-        ON CONFLICT (id) DO NOTHING;
+        ON CONFLICT (id) DO UPDATE SET role = EXCLUDED.role;
       `;
     }),
   );
