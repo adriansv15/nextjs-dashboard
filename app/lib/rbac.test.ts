@@ -1,17 +1,16 @@
-import { describe, expect, it } from 'vitest';
-import { canDeleteInvoice, canUpdateInvoice, isRoleAtLeast } from './rbac';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { canDeleteInvoice, canUpdateInvoice, isRoleAtLeast } from './rbac-core.ts';
 
-describe('rbac invoice permissions', () => {
-  it('enforces role hierarchy for invoice updates', () => {
-    expect(isRoleAtLeast('viewer', 'editor')).toBe(false);
-    expect(isRoleAtLeast('editor', 'viewer')).toBe(true);
-    expect(canUpdateInvoice('editor')).toBe(true);
-    expect(canUpdateInvoice('admin')).toBe(true);
-  });
+test('enforces role hierarchy for invoice updates', () => {
+  assert.equal(isRoleAtLeast('viewer', 'editor'), false);
+  assert.equal(isRoleAtLeast('editor', 'viewer'), true);
+  assert.equal(canUpdateInvoice('editor'), true);
+  assert.equal(canUpdateInvoice('admin'), true);
+});
 
-  it('restricts invoice deletion to admins', () => {
-    expect(canDeleteInvoice('viewer')).toBe(false);
-    expect(canDeleteInvoice('editor')).toBe(false);
-    expect(canDeleteInvoice('admin')).toBe(true);
-  });
+test('restricts invoice deletion to admins', () => {
+  assert.equal(canDeleteInvoice('viewer'), false);
+  assert.equal(canDeleteInvoice('editor'), false);
+  assert.equal(canDeleteInvoice('admin'), true);
 });
