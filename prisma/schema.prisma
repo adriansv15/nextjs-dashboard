@@ -8,7 +8,7 @@ datasource db {
 }
 
 model customers {
-  id        String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String @id @default(uuid()) @db.Uuid
   name      String @db.VarChar(255)
   email     String @db.VarChar(255)
   image_url String @db.VarChar(255)
@@ -16,7 +16,7 @@ model customers {
 }
 
 model invoices {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   customer_id String   @db.Uuid
   amount      Int
   status      String   @db.VarChar(255)
@@ -30,7 +30,7 @@ model revenue {
 }
 
 model users {
-  id       String @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id       String @id @default(uuid()) @db.Uuid
   name     String @db.VarChar(255)
   email    String @unique
   password String

@@ -1,5 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
+var bcrypt  = require('../node_modules/bcrypt');
 const prisma = new PrismaClient();
+
 
 const users = [
   {
@@ -83,7 +85,14 @@ const revenue = [
 async function main() {
   console.log('Seeding users...');
   for (const u of users) {
-    await prisma.users.upsert({ where: { email: u.email }, update: {}, create: u });
+    const hashedPassword = await bcrypt.hash(u.password, 10)
+    await prisma.users.upsert({ where: { id: u.id }, update: {}, create: {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        password: hashedPassword,
+      } 
+    });
   }
 
   console.log('Seeding customers...');

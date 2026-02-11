@@ -9,8 +9,6 @@ import { FormSchema, CreateInvoice, UpdateInvoice } from '@/app/lib/schemas/invo
 
 const prisma = new PrismaClient();
 
-export { FormSchema, CreateInvoice, UpdateInvoice };
-
 export type State = {
   errors?: {
     customerId?: string[];
