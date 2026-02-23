@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import { signIn } from '@/auth'
 import { AuthError } from 'next-auth';
 import { FormSchema, CreateInvoice, UpdateInvoice } from '@/app/lib/schemas/invoice';
+import { CustomerFormSchema, CreateCustomer, UpdateCustomer } from '@/app/lib/schemas/customer';
 
 const prisma = new PrismaClient();
 
@@ -14,6 +15,14 @@ export type State = {
     customerId?: string[];
     amount?: string[];
     status?: string[];
+  };
+  message?: string | null;
+};
+
+export type CustomerState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
   };
   message?: string | null;
 };
@@ -113,4 +122,82 @@ export async function authenticate(
     }
     throw error;
   }
+}
+
+export async function createCustomer(prevState: CustomerState, formData: FormData) {
+  const validatedFields = CreateCustomer.safeParse({
+      name: formData.get('name'),
+      email: formData.get('email'),
+  })
+
+  if(!validatedFields.success){
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to create customer.'
+    }
+  }
+
+  const { name, email } = validatedFields.data
+  
+  try {
+    await prisma.customers.create({
+      data: {
+        name,
+        email,
+        image_url: '/customers/amy-burns.png'
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return {
+      message: 'Database Error: Failed to create customer.'
+    };
+  }
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers')
+}
+
+export async function updateCustomer(id: string, prevState: CustomerState, formData: FormData) {
+  const validatedFields = UpdateCustomer.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+  })
+
+  if(!validatedFields.success){
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to update customer.'
+    }
+  }
+  
+  const { name, email } = validatedFields.data
+ 
+  try {
+    await prisma.customers.update({
+      where: { id },
+      data: {
+        name,
+        email,
+      },
+    });
+  } catch (error) {
+    return {
+      message: 'Database Error: Failed to update customer.'
+    };
+  }
+ 
+  revalidatePath('/dashboard/customers');
+  redirect('/dashboard/customers');
+}
+
+export async function deleteCustomer(id: string) {
+  const deleteInvoices = prisma.invoices.deleteMany({ 
+    where: { 
+      customer_id: id,
+    }
+  })
+  const deleteCustomerAccount =  prisma.customers.delete({ where: { id } });
+  
+  const transaction = await prisma.$transaction([deleteInvoices, deleteCustomerAccount])
+  revalidatePath('/dashboard/customers');
 }

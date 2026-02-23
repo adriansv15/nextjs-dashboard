@@ -83,6 +83,11 @@ const revenue = [
 ];
 
 async function main() {
+  await prisma.customers.deleteMany({})
+  await prisma.invoices.deleteMany({})
+  await prisma.revenue.deleteMany({})
+  await prisma.users.deleteMany({})
+
   console.log('Seeding users...');
   for (const u of users) {
     const hashedPassword = await bcrypt.hash(u.password, 10)

@@ -7,6 +7,7 @@ import {
   LatestInvoiceRaw,
   Revenue,
   FormattedCustomersTable,
+  CustomerForm,
 } from './definitions';
 import { formatCurrency } from './utils';
 
@@ -231,5 +232,21 @@ export async function fetchFilteredCustomers(query: string): Promise<FormattedCu
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch customer table.');
+  }
+}
+
+export async function fetchCustomerById(id: string) {
+  try {
+    const customer = await prisma.customers.findUnique({ where: { id } });
+    if (!customer) return null;
+
+    return {
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+    } as unknown as CustomerForm;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch customer.');
   }
 }
